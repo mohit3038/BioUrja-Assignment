@@ -1,0 +1,54 @@
+# Import the pandas library to work with data in tabular form
+import pandas as pd
+
+# Load the input data from a CSV file into a DataFrame
+data = pd.read_csv('/biourja-efzrr-y7i38ed9-input.csv')
+
+# Define zonal wind power forecasts for different zones
+zonal_forecasts = {
+    'E': 2800,  # East zone forecast
+    'N': 1500,  # North zone forecast
+    'W': 2000,  # West zone forecast
+    'S': 6500   # South zone forecast
+}
+
+# Calculate the scaling factor to redistribute the total state forecast among zones
+total_state_forecast = 12000  # Given total state forecast
+sum_zonal_forecasts = 0
+for i in zonal_forecasts:
+    sum_zonal_forecasts += zonal_forecasts[i]
+
+scaling_factor = total_state_forecast / sum_zonal_forecasts
+
+# Apply the scaling factor to adjust zonal forecasts according to the total state forecast
+for i in zonal_forecasts:
+    zonal_forecasts[i] = zonal_forecasts[i]*scaling_factor
+
+
+# Calculate the total sum of Individual Forecast(from input data) of wind farms in each zone based on the first letter of the plant name
+individual_forecast = data.groupby(data['Plant_Name'].str[0])['Forecast'].sum()
+
+# Initialize a dictionary to store the ratio of redistributed forecast to individual forecast for each zone
+# Then , Calculate the ratio for each zone by dividing the zonal forecast by individual forecast
+ratio = {
+    'E': 0,
+    'N': 0,
+    'W': 0,
+    'S': 0
+}
+
+for x in ratio:
+    ratio[x] = zonal_forecasts[x] / individual_forecast[x]
+
+# Create a new column 'Redistributed_Forecast' in the DataFrame to store the redistributed forecasts
+data['Redistributed_Forecast'] = data['Forecast'] * data['Plant_Name'].str[0].map(ratio)
+
+# Calculate the minimum of 'Capacity' and 'Redistributed_Forecast' for each row
+data['Redistributed_Forecast'] = data[['Capacity', 'Redistributed_Forecast']].min(axis=1)
+
+# Set display options to show all rows and columns
+pd.set_option('display.max_rows', None)  # Show all rows
+pd.set_option('display.max_columns', None)  # Show all columns
+
+# Print the 'Plant_Name' and 'Redistributed_Forecast' columns from the DataFrame as a CSV without the index
+print(data[['Plant_Name', 'Redistributed_Forecast']].to_csv(index=False))
