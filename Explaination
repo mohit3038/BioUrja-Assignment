@@ -1,0 +1,42 @@
+Detailed explanation of each line:
+
+1. `import pandas as pd`: This line imports the Pandas library and aliases it as 'pd' for easier use in the code.performing data manipulation and calculations using the Pandas library in Python
+
+2. `data = pd.read_csv('/content/biourja-efzrr-y7i38ed9-input.csv')`: This line reads data from a CSV file located at the specified path and loads it into a Pandas DataFrame called 'data'.
+
+3. `zonal_forecasts = {...}`: This block defines a dictionary named 'zonal_forecasts' containing forecasts for different geographic zones ('E' for East, 'N' for North, 'W' for West, and 'S' for South).
+
+4. `total_state_forecast = 12000`: This line sets the total state forecast value to 12,000.
+
+5. `sum_zonal_forecasts = 0`: Initialize a variable 'sum_zonal_forecasts' to keep track of the sum of zonal forecasts.
+
+6. `for i in zonal_forecasts:`: This line initiates a loop to iterate over the zonal_forecasts dictionary.
+
+7. `sum_zonal_forecasts += zonal_forecasts[i]`: In each iteration of the loop, it adds the zonal forecast value to the 'sum_zonal_forecasts' variable.
+
+8. `scaling_factor = total_state_forecast / sum_zonal_forecasts`: This line calculates the scaling factor as the ratio of the total state forecast to the sum of zonal forecasts.
+
+9. `for i in zonal_forecasts:`: This loop is used to apply the scaling factor to each zonal forecast, adjusting them according to the total state forecast.
+
+10. `zonal_forecasts[i] = zonal_forecasts[i]*scaling_factor`: In each iteration, it updates the zonal forecasts based on the calculated scaling factor.
+
+11. `individual_forecast = data.groupby(data['Plant_Name'].str[0])['Forecast'].sum()`: This line groups the data in the 'data' DataFrame by the first letter of the 'Plant_Name' column and then calculates the sum of 'Forecast' values within each group. This effectively calculates the total forecast of wind farms in each zone based on the first letter of the plant name.
+
+12. `ratio = {...}`: Here, a dictionary named 'ratio' is defined, initially containing zeros for each zone.
+
+13. `for x in ratio:`: This loop iterates through the 'ratio' dictionary.
+
+14. `ratio[x] = zonal_forecasts[x] / individual_forecast[x]`: In each iteration, it calculates and assigns the ratio of redistributed forecast to individual forecast for each zone based on the calculated zonal forecasts and individual forecasts.
+
+15. create a new column in a Pandas DataFrame called 'data' named 'Redistributed_Forecast'. This new column is calculated based on the values in the 'Forecast' column and a mapping defined by the 'ratio' dictionary.
+data['Redistributed_Forecast']: specifies the name of the new column ('Redistributed_Forecast') that will be added to the 'data' DataFrame to store the redistributed forecasts.
+= data['Forecast']: Here, the values in the 'Redistributed_Forecast' column are computed based on the values in the 'Forecast' column of the same DataFrame.
+* data['Plant_Name'].str[0].map(ratio): This part of the code performs the actual calculation. It takes the first character (character at index 0) of each value in the 'Plant_Name' column, which is presumably a string column containing plant names. Then, it maps these first characters to corresponding values from the 'ratio' dictionary.
+
+16. `data['Redistributed_Forecast'] = data[['Capacity', 'Redistributed_Forecast']].min(axis=1)`: For each row, this line calculates the minimum value between 'Capacity' and 'Redistributed_Forecast' and assigns it to the 'Redistributed_Forecast' column. This likely represents some form of constraint on how much forecast can be allocated to a particular wind farm.
+
+17. `pd.set_option('display.max_rows', None)`: This code sets Pandas to display all rows in the output.
+
+18. `pd.set_option('display.max_columns', None)`: This code sets Pandas to display all columns in the output.
+
+19. `print(data[['Plant_Name', 'Redistributed_Forecast']].to_csv(index=False))`: Finally, this line prints the 'Plant_Name' and 'Redistributed_Forecast' columns from the 'data' DataFrame as a CSV file without the index. The output will display the redistributed forecasts for each wind farm.
